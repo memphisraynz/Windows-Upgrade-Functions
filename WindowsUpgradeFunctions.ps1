@@ -315,6 +315,15 @@ function Start-Win11ISODownload {
         $null = New-Item -Path $DownloadPath -ItemType Directory -ErrorAction SilentlyContinue
     }
 
+    if ($DownloadPath  -match 'iso$') {
+        $DownloadPath = $DownloadPath
+    } else {
+        $download = Invoke-WebRequest $(Get-Win11ISOLink) -Method Head -UseBasicParsing
+        $content = [System.Net.Mime.ContentDisposition]::new($download.Headers["Content-Disposition"])
+        $fileName = $content.FileName
+        $DownloadPath = "$DownloadPath\$fileName"
+    }
+
     Write-Verbose "Attempting to generate a $Architecture windows 11 iso download link" -Verbose
     try {
         $DownloadLink = Get-Win11ISOLink -Architecture $Architecture -Version $Version
@@ -686,4 +695,4 @@ function Start-Win10UpgradeCAB{
     }
 }
 
-#11.4
+#11.5
