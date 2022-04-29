@@ -315,16 +315,6 @@ function Start-Win11ISODownload {
         $null = New-Item -Path $DownloadPath -ItemType Directory -ErrorAction SilentlyContinue
     }
 
-
-    if ($DownloadPath  -match 'iso$') {
-        $FilePath = $DownloadPath
-    } else {
-        $download = Invoke-WebRequest $DownloadLink -Method Head -UseBasicParsing
-        $content = [System.Net.Mime.ContentDisposition]::new($download.Headers["Content-Disposition"])
-        $fileName = $content.FileName
-        $FilePath = "$DownloadPath\$fileName"
-    }
-
     Write-Verbose "Attempting to generate a $Architecture windows 11 iso download link" -Verbose
     try {
         $DownloadLink = Get-Win11ISOLink -Architecture $Architecture -Version $Version
@@ -333,19 +323,19 @@ function Start-Win11ISODownload {
         throw "Failed to generate windows 11 iso download link."
     }
     
-    Write-Verbose "Attempting to download windows 11 iso to '$FilePath'" -Verbose
+    Write-Verbose "Attempting to download windows 11 iso to '$DownloadPath'" -Verbose
     try {
-        $Split = $FilePath.Split("\\")
+        $Split = $DownloadPath.Split("\\")
         New-Item -Path $(([string]$split[0..($Split.count-2)]) -replace(" ","\")) -ItemType Directory -Force | Out-Null
         
-        if (Test-Path -Path $FilePath) {
-            $ISO = Get-Item $FilePath
+        if (Test-Path -Path $DownloadPath) {
+            $ISO = Get-Item $DownloadPath
             If ($ISO.Length -ne $((Invoke-WebRequest $DownloadLink -Method Head -UseBasicParsing).Headers.'Content-Length')) {
-                Remove-Item $FilePath -Force
-                (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$FilePath")
+                Remove-Item $DownloadPath -Force
+                (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$DownloadPath")
             }
         } else {
-            (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$FilePath")
+            (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$DownloadPath")
         }
     }
     catch {
@@ -508,6 +498,15 @@ function Start-Win11UpgradeISO {
     
     if(-not (Test-Path $DLPath -ErrorAction SilentlyContinue)) {
         $null = New-Item -Path $DLPath -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
+    if ($DLPath  -match 'iso$') {
+        $DLPath = $DLPath
+    } else {
+        $download = Invoke-WebRequest $(Get-Win11ISOLink) -Method Head -UseBasicParsing
+        $content = [System.Net.Mime.ContentDisposition]::new($download.Headers["Content-Disposition"])
+        $fileName = $content.FileName
+        $DLPath = "$DLPath\$fileName"
     }
 
     Start-Transcript -Path $((Split-Path $DLPath) + "\Win11-UpgradeScript.log") -Force
@@ -687,4 +686,4 @@ function Start-Win10UpgradeCAB{
     }
 }
 
-#11.3
+#11.4
