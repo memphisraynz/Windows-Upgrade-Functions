@@ -311,6 +311,10 @@ function Start-Win11ISODownload {
         $DownloadPath
     )
 
+    if(-not (Test-Path $DownloadPath -ErrorAction SilentlyContinue)) {
+        $null = New-Item -Path $DownloadPath -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
     Write-Verbose "Attempting to generate a $Architecture windows 11 iso download link" -Verbose
     try {
         $DownloadLink = Get-Win11ISOLink -Architecture $Architecture -Version $Version
@@ -449,6 +453,30 @@ function Start-Win11UpgradeISO {
         Version 1.0 (2020-02-11)
         Version 1.1 (2020-06-03) - Added handling for case where drive letter was not mounted.                
         Version 1.2 (2020-06-03) - Added ISO download functionality
+        /Install
+/Uninstall
+/EosUi
+/ReUseCatalog
+/PostEosUi
+/TenSUi
+/SunValley
+/PreventWUUpgrade
+/SetOobeTourniquetRunningRegKey
+/SetPriorityLow
+/UninstallUponExit
+/UninstallUponUpgrade
+/ForceUninstall
+/MinimizeToTaskBar
+/ShowProgressInTaskBarIcon
+/EnableTelemetry
+/SkipSelfUpdate
+/SkipEULA
+/SkipCompatCheck
+/QuietInstall
+/NoRestartUI
+/Upgrade
+/migratedrivers all /Compat IgnoreWarning
+/migratedrivers all /Compat IgnoreWarning
     #>
     [CmdletBinding()]
     param (
@@ -459,22 +487,26 @@ function Start-Win11UpgradeISO {
         [ValidateSet("64-bit", "32-bit")]
         [String] $Architecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture,
         [Parameter(Mandatory=$false)] 
-        [String] [String] $DLPath = (Get-Location).Path + "\" +"Win10_" + $Architecture + ".iso",
+        [String] [String] $DLPath = (Get-Location).Path + "\" +"Win11_" + $Architecture + ".iso",
         [Parameter(Mandatory=$false)] 
-        [String] $LogPath = $((Split-Path $DLPath) + "\Win10_Upgrade.log"),
+        [String] $LogPath = $((Split-Path $DLPath) + "\Win11_Upgrade.log"),
         [Parameter(Mandatory=$false)]
         [String] $Version = "2109",
         [switch] $DynamicUpdates,
         [switch] $LocalOnly
     )
     
+    if(-not (Test-Path $DLPath -ErrorAction SilentlyContinue)) {
+        $null = New-Item -Path $DLPath -ItemType Directory -ErrorAction SilentlyContinue
+    }
+
     Start-Transcript -Path $((Split-Path $DLPath) + "\Win11-UpgradeScript.log") -Force
 
     Write-Verbose "Cleaning up any previous Windows 11 updates" -Verbose
     CleanPreviousUpdate
     
     if (-not $LocalOnly) {
-        Write-Verbose "Attempting to download windows 10 iso to '$DLPath'" -Verbose
+        Write-Verbose "Attempting to download windows 11 iso to '$DLPath'" -Verbose
         try {
             Start-Win11ISODownload -Version $Version -DownloadPath $DLPath
         }
@@ -645,4 +677,4 @@ function Start-Win10UpgradeCAB{
     }
 }
 
-#316
+#11.1
