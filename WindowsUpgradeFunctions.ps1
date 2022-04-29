@@ -315,6 +315,12 @@ function Start-Win11ISODownload {
         $null = New-Item -Path $DownloadPath -ItemType Directory -ErrorAction SilentlyContinue
     }
 
+    $DownloadLink = "https://software.download.prss.microsoft.com/sg/Win11_English_x64v1.iso?t=3fe8b16a-7b0b-493e-aa4b-3d5d7a3ac21d&e=1651280843&h=71ff624305c8d21062ef5acfacaa36a779f255d5cc91410648db185fb2acfcde"
+    $download = Invoke-WebRequest $DownloadLink -Method Head -UseBasicParsing
+    $content = [System.Net.Mime.ContentDisposition]::new($download.Headers["Content-Disposition"])
+    $fileName = $content.FileName
+    $FilePath = "$DownloadPath\$fileName"
+
     Write-Verbose "Attempting to generate a $Architecture windows 11 iso download link" -Verbose
     try {
         $DownloadLink = Get-Win11ISOLink -Architecture $Architecture -Version $Version
@@ -323,19 +329,19 @@ function Start-Win11ISODownload {
         throw "Failed to generate windows 11 iso download link."
     }
     
-    Write-Verbose "Attempting to download windows 11 iso to '$DownloadPath'" -Verbose
+    Write-Verbose "Attempting to download windows 11 iso to '$FilePath'" -Verbose
     try {
-        $Split = $DownloadPath.Split("\\")
+        $Split = $FilePath.Split("\\")
         New-Item -Path $(([string]$split[0..($Split.count-2)]) -replace(" ","\")) -ItemType Directory -Force | Out-Null
         
-        if (Test-Path -Path $DownloadPath) {
-            $ISO = Get-Item $DownloadPath
+        if (Test-Path -Path $FilePath) {
+            $ISO = Get-Item $FilePath
             If ($ISO.Length -ne $((Invoke-WebRequest $DownloadLink -Method Head -UseBasicParsing).Headers.'Content-Length')) {
-                Remove-Item $DownloadPath -Force
-                (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$DownloadPath")
+                Remove-Item $FilePath -Force
+                (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$FilePath")
             }
         } else {
-            (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$DownloadPath")
+            (New-Object System.Net.WebClient).DownloadFile($DownloadLink, "$FilePath")
         }
     }
     catch {
@@ -677,4 +683,4 @@ function Start-Win10UpgradeCAB{
     }
 }
 
-#11.1
+#11.2
