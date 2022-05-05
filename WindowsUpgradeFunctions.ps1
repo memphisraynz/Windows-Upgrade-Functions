@@ -549,13 +549,13 @@ function Start-Win11UpgradeISO {
             $stopwatch = [diagnostics.stopwatch]::StartNew()
             do {
                 $DriveLetter = (Get-DiskImage -ImagePath $ISOPath -ErrorAction SilentlyContinue | Get-Volume).DriveLetter
-                #Close explorer popup
-                $locationurl = 'file:///' + $driveletter + ':/'
-                $shell = New-Object -ComObject Shell.Application
-                $window = $shell.Windows() | Where-Object {$_.LocationURL -eq $locationurl}
-                if ($window) {
-                    $window.Quit()
-                }
+                ##Close explorer popup
+                #$locationurl = 'file:///' + $driveletter + ':/'
+                #$shell = New-Object -ComObject Shell.Application
+                #$window = $shell.Windows() | Where-Object {$_.LocationURL -eq $locationurl}
+                #if ($window) {
+                #    $window.Quit()
+                #}
                 #Sleep and try again
                 Start-Sleep -Seconds 1
             } until ($DriveLetter -or $stopwatch.elapsed -gt $timeout)
@@ -576,9 +576,9 @@ function Start-Win11UpgradeISO {
         Write-Output "ISO mounted to volume $DriveLetter"
         if ($Reboot -eq $true){
             Write-Output "$($DriveLetter):\setup.exe /auto upgrade /quiet /EULA accept /migratedrivers all /showoobe none /compat ignorewarning /dynamicupdate $DynamicUpdate /copylogs $LogPath"
-            Start-Process -FilePath "$($DriveLetter):\setup.exe" -ArgumentList "/auto upgrade /quiet /EULA accept /migratedrivers all /showoobe none /compat ignorewarning /dynamicupdate $DynamicUpdate /copylogs $LogPath"
+            Start-Process -FilePath "$($DriveLetter):\setup.exe" -ArgumentList "/auto upgrade /migratedrivers all /showoobe none /compat ignorewarning /dynamicupdate $DynamicUpdate /copylogs $LogPath"
         } else{
-            Start-Process -FilePath "$($DriveLetter):\setup.exe" -ArgumentList "/auto upgrade /quiet /EULA accept /migratedrivers all /showoobe none /compat ignorewarning /dynamicupdate $DynamicUpdate /copylogs $LogPath /noreboot"
+            Start-Process -FilePath "$($DriveLetter):\setup.exe" -ArgumentList "/auto upgrade /migratedrivers all /showoobe none /compat ignorewarning /dynamicupdate $DynamicUpdate /copylogs $LogPath /noreboot"
         }    
     } else {
         throw "ISO could not be mounted on this system."
@@ -695,4 +695,4 @@ function Start-Win10UpgradeCAB{
     }
 }
 
-#11.5
+#11.6
